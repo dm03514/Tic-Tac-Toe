@@ -64,14 +64,6 @@ class Board(object):
     def __init__(self):
         self.spaces = list(range(self.NUM_SPACES))
 
-    @property
-    def game_over(self):
-        """
-        Checks if the game is over.  Game is over if there is a win or
-        if all spaces are used up
-        """
-        return False
-
     def get_legal_moves(self):
         """
         Generates a collection of all legal moves on this board.
@@ -79,12 +71,20 @@ class Board(object):
         """
         pass
 
-    def has_win(self):
+    def get_win(self):
         """
         Checks if the board has any wins on it.
         @return tuple (winning_positions_tuple, winning_player)
         """
-        pass
+        # go through each winning positions and check to see if
+        # any of the positions have the same player instance
+        for position in self.WINNING_POSITIONS:
+            if isinstance(self.spaces[position[0]], Player) and (
+                self.spaces[position[0]] == self.spaces[position[1]] == self.spaces[position[2]]):
+
+                return (position, self.spaces[position[1]])
+
+        return False
 
     def is_valid_space(self, space_num):
         """
@@ -146,8 +146,8 @@ def main():
             print("{}'s Turn:".format(player.name))
             player.make_play()
             print(board)
-            over = board.game_over
-            if over:
+            win = board.get_win()
+            if win:
                 print('Game Over')
                 return
 
