@@ -1,11 +1,56 @@
+from random import shuffle
+
+class Minimax(object):
+
+    def __init__(self, board):
+        self.board = board
+
+    def make_pick(self):
+        """
+        """
+        # return a first empty board space for right now
+        for space in self.board.spaces:
+            if not isinstance(space, Player):
+                return space
 
 
 class Player(object):
 
-    def __init__(self, symbol, name, is_human=True):
+    def __init__(self, board, symbol, name, is_human=True, ai_strat=None):
+        self.board = board
         self.symbol = symbol 
         self.name = name
         self.is_human = is_human
+        self.ai_strat = ai_strat 
+
+    def _get_player_input(self):
+        """
+        Gets a players input.
+        """
+        while True:
+            try:
+                space_num = int(raw_input('Space Number?'))
+            except ValueError:
+                print('Invalid Space Number, Please choose again')
+            else:
+                if self.board.is_valid_space(space_num):
+                    return space_num
+
+    def make_play(self):
+        """
+        Puts a play on the board.  If player is human player prompt for a 
+        play space, else if it is computer player, use an ai_strat to 
+        determine the play.
+        """
+        if self.is_human:
+            # prompt for user input
+            space_num = self._get_player_input()
+        else:
+            # computer will only choose a valid space,
+            # no need to validate, just mark it
+            space_num = self.ai_strat.make_pick()
+
+        self.board.mark_space(space_num, self)
 
 
 class Board(object):
@@ -18,6 +63,14 @@ class Board(object):
     
     def __init__(self):
         self.spaces = list(range(self.NUM_SPACES))
+
+    @property
+    def game_over(self):
+        """
+        Checks if the game is over.  Game is over if there is a win or
+        if all spaces are used up
+        """
+        return False
 
     def get_legal_moves(self):
         """
@@ -33,6 +86,14 @@ class Board(object):
         """
         pass
 
+    def is_valid_space(self, space_num):
+        """
+        Checks if a space is valid.
+        Valid spaces must be an index in self.spaces, 
+        and the space must be open.
+        """
+        return True
+
     def is_space_open(self, space_num):
         """
         Checks if a given space is open or not
@@ -45,7 +106,7 @@ class Board(object):
         Marks a space, on the board for the given player.
         @param player object Player instance
         """
-        pass
+        self.spaces[space_num] = player
 
     def __str__(self):
         """
@@ -67,14 +128,29 @@ class Board(object):
 
 def main():
     board = Board()
-    player_one = Player('H', 'human')
-    player_two = Player('C', 'computer', is_human=False)
+    players = [
+        Player(board, 'H', 'human'),
+        Player(board, 'C', 'computer', is_human=False, ai_strat=Minimax(board))
+    ]
 
-    # determine who goes first
+    # randomly determine who goes first
+    shuffle(players)
+
+    print(board)
 
     # game loop
     while True:
-        pass
+
+        # each player plays until the game has a winner
+        for player in players:
+            print("{}'s Turn:".format(player.name))
+            player.make_play()
+            print(board)
+            over = board.game_over
+            if over:
+                print('Game Over')
+                return
+
 
 if __name__ == '__main__':
     main()
