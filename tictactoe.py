@@ -35,6 +35,7 @@ class Player(object):
             else:
                 if self.board.is_valid_space(space_num):
                     return space_num
+                print('Invalid Space Number, Please choose again')
 
     def make_play(self):
         """
@@ -79,7 +80,7 @@ class Board(object):
         # go through each winning positions and check to see if
         # any of the positions have the same player instance
         for position in self.WINNING_POSITIONS:
-            if isinstance(self.spaces[position[0]], Player) and (
+            if (isinstance(self.spaces[position[0]], Player) and
                 self.spaces[position[0]] == self.spaces[position[1]] == self.spaces[position[2]]):
 
                 return (position, self.spaces[position[1]])
@@ -92,14 +93,15 @@ class Board(object):
         Valid spaces must be an index in self.spaces, 
         and the space must be open.
         """
-        return True
+        return (space_num in range(self.NUM_SPACES) and
+                self.is_space_open(space_num))
 
     def is_space_open(self, space_num):
         """
         Checks if a given space is open or not
         @return boolean
         """
-        pass
+        return not isinstance(self.spaces, Player)
 
     def mark_space(self, space_num, player):
         """
@@ -148,7 +150,7 @@ def main():
             print(board)
             win = board.get_win()
             if win:
-                print('Game Over')
+                print('{} Won! Game Over'.format(win[1].name))
                 return
 
 
