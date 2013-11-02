@@ -1,31 +1,15 @@
 
-def main():
-    board = Board()
-    player_one = Player('x', 'human')
-    player_two = Player('o', 'computer', is_human=False)
-
-    # determine who goes first
-
-    # game loop
-    while True:
-        pass
-        
-
-
-
-if __name__ == '__main__':
-    main()
-
 
 class Player(object):
 
     def __init__(self, symbol, name, is_human=True):
-        self.symbol = mark
+        self.symbol = symbol 
         self.name = name
         self.is_human = is_human
 
 
 class Board(object):
+    NUM_SPACES = 9
     WINNING_POSITIONS = (
         (0, 1, 2), (3, 4, 5), (6, 7, 8), # rows
         (0, 3, 6), (1, 4, 7), (2, 5, 8), # cols
@@ -33,12 +17,26 @@ class Board(object):
     )
     
     def __init__(self):
-        self.spaces = list(range(9)) 
+        self.spaces = list(range(self.NUM_SPACES))
 
     def get_legal_moves(self):
         """
         Generates a collection of all legal moves on this board.
-        @return tuple
+        @return tuple of moves
+        """
+        pass
+
+    def has_win(self):
+        """
+        Checks if the board has any wins on it.
+        @return tuple (winning_positions_tuple, winning_player)
+        """
+        pass
+
+    def is_space_open(self, space_num):
+        """
+        Checks if a given space is open or not
+        @return boolean
         """
         pass
 
@@ -49,9 +47,34 @@ class Board(object):
         """
         pass
 
-    def is_space_open(self, space_num):
+    def __str__(self):
         """
-        Checks if a given space is open or not
-        @return boolean
+        Prints board as a grid.
         """
+        return """
+        |{}|
+        |{}|
+        |{}|
+        """.format(
+            '|'.join(x.symbol if isinstance(x, Player) else str(x)
+                        for x in self.spaces[:3]),
+            '|'.join(x.symbol if isinstance(x, Player) else str(x)
+                        for x in self.spaces[3:6]),
+            '|'.join(x.symbol if isinstance(x, Player) else str(x)
+                        for x in self.spaces[6:9]),
+        )
+
+
+def main():
+    board = Board()
+    player_one = Player('H', 'human')
+    player_two = Player('C', 'computer', is_human=False)
+
+    # determine who goes first
+
+    # game loop
+    while True:
         pass
+
+if __name__ == '__main__':
+    main()
