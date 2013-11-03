@@ -18,6 +18,7 @@ class Minimax(object):
 
         if not moves or depth == 0:
             best_score = self._evaluate()
+            return (best_score, best_position)
 
         for move in moves:
             # try move for the current player
@@ -49,46 +50,53 @@ class Minimax(object):
                0 otherwise
         """
         score = 0
-        for position in self.board.WINNING_POSITIONS:
+        return sum(self._evaluate_line(position) 
+                    for position in self.board.WINNING_POSITIONS)
 
-            first_pos, second_pos, third_pos = position
-            # first space
-            if self.board.spaces[first_pos] == self.board.CURRENT_PLAYER:
+    def _evaluate_line(self, position):
+        """
+        Calculates the score for a given position.
+        @param position tuple (int, int, int) representing a winning line
+        @return int
+        """
+        score = 0
+        first_pos, second_pos, third_pos = position
+        # first space
+        if self.board.spaces[first_pos] == self.board.CURRENT_PLAYER:
+            score = 1
+        else:
+            score = -1
+        # second space 
+        if self.board.spaces[second_pos] == self.board.CURRENT_PLAYER:
+            if score == 1: 
+                score = 10
+            elif score == -1:
+                return 0
+            else:
                 score = 1
+        else:
+            if score == -1:
+                score = -10 
+            elif score == 1:
+                return 0
+            else: 
+                score = -1
+        # third space
+        if self.board.spaces[third_pos] == self.board.CURRENT_PLAYER:
+            if score > 0:
+                score *= 10
+            elif score < 0:
+                return 0
+            else:
+                score = 1
+        else:
+            if score < 0:
+                score *= 10
+            elif score > 1:
+                return 0
             else:
                 score = -1
-            # second space 
-            if self.board.spaces[second_pos] == self.board.CURRENT_PLAYER:
-                if score == 1: 
-                    score = 10
-                elif score == -1:
-                    return 0
-                else:
-                    score = 1
-            else:
-                if score == -1:
-                    score = -10 
-                elif score == 1:
-                    return 0
-                else: 
-                    score = -1
-            # third space
-            if self.board.spaces[third_pos] == self.board.CURRENT_PLAYER:
-                if score > 0:
-                    score *= 10
-                elif score < 0:
-                    return 0
-                else:
-                    score = 1
-            else:
-                if score < 0:
-                    score *= 10
-                elif score > 1:
-                    return 0
-                else:
-                    score = -1
-
-            return score
+        return score
 
     def make_pick(self, player):
         """
@@ -97,7 +105,6 @@ class Minimax(object):
         # if no picks have been made, choose a random space
         if len(self.board.get_legal_moves()) == self.board.NUM_SPACES:
             return choice(range(self.board.NUM_SPACES))
-        import ipdb; ipdb.set_trace();
         return self._minimax(self.MINIMAX_DEPTH, player)[1]
 
 
@@ -139,6 +146,7 @@ class Player(object):
             space_num = self.ai_strat.make_pick(self)
 
         self.board.mark_space(space_num, self)
+        return space_num
 
     def __str__(self):
         return '<Player: {} {}>'.format(self.name, self.symbol)

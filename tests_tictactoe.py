@@ -32,12 +32,27 @@ class TestTicTacToe(unittest.TestCase):
             board.spaces[space] = player
         self.assertTrue(board.get_win())
        
-    @unittest.skip('') 
     def test_minimax(self):
         """
-        Tests that minimax does something, without errors.
+        Tests that computer can block human. 
         """
-        player = Player(board, 'C', 'Computer', is_human=False)
         board = Board()
-        minimax = Minimax(board)
-        minimax.make_pick(player)
+        computer = Player(board, 'C', 'computer', is_human=False, ai_strat=Minimax(board))
+        human = Player(board, 'H', 'human')
+        # set up human about to win
+        board.spaces[0] = human
+        board.spaces[1] = human
+        # set up computer to not have win cond
+        board.spaces[4] = computer
+        board.spaces[8] = computer
+        """
+        |H|H|2|
+        |3|C|5|
+        |6|7|C|
+        """
+        board.CURRENT_PLAYER = computer
+        board.WAITING_PLAYER = human 
+
+        #import ipdb; ipdb.set_trace();
+        self.assertEqual(2, computer.make_play())
+
