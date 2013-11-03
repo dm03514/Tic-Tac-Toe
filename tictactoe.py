@@ -1,7 +1,7 @@
-from random import shuffle
+from random import shuffle, choice
 
 class Minimax(object):
-    LEVEL = 2
+    MINIMAX_DEPTH = 2
 
     def __init__(self, board):
         self.board = board
@@ -11,7 +11,8 @@ class Minimax(object):
         Implements minimax according to:
         http://www.ntu.edu.sg/home/ehchua/programming/java/JavaGame_TicTacToe_AI.html#show-toc
         """
-        best_score = float('-inf') if player == board.CURRENT_PLAYER else float('inf')
+        #import ipdb; ipdb.set_trace();
+        best_score = float('-inf') if player == self.board.CURRENT_PLAYER else float('inf')
         best_position = -1
         moves = self.board.get_legal_moves()
 
@@ -41,17 +42,63 @@ class Minimax(object):
         return (best_score, best_position)
 
     def _evaluate(self):
-        pass
+        """
+        The heuristic evaluation function for the current board
+        @Return +100, +10, +1 for EACH 3-, 2-, 1-in-a-line for computer.
+               -100, -10, -1 for EACH 3-, 2-, 1-in-a-line for opponent.
+               0 otherwise
+        """
+        score = 0
+        for position in self.board.WINNING_POSITIONS:
 
-    def make_pick(self):
+            first_pos, second_pos, third_pos = position
+            # first space
+            if self.board.spaces[first_pos] == self.board.CURRENT_PLAYER:
+                score = 1
+            else:
+                score = -1
+            # second space 
+            if self.board.spaces[second_pos] == self.board.CURRENT_PLAYER:
+                if score == 1: 
+                    score = 10
+                elif score == -1:
+                    return 0
+                else:
+                    score = 1
+            else:
+                if score == -1:
+                    score = -10 
+                elif score == 1:
+                    return 0
+                else: 
+                    score = -1
+            # third space
+            if self.board.spaces[third_pos] == self.board.CURRENT_PLAYER:
+                if score > 0:
+                    score *= 10
+                elif score < 0:
+                    return 0
+                else:
+                    score = 1
+            else:
+                if score < 0:
+                    score *= 10
+                elif score > 1:
+                    return 0
+                else:
+                    score = -1
+
+            return score
+
+    def make_pick(self, player):
         """
         Calls _minimax function
         """
-        # return a first empty board space for right now
-        for space in self.board.spaces:
-            if not isinstance(space, Player):
-                return space
-        
+        # if no picks have been made, choose a random space
+        if len(self.board.get_legal_moves()) == self.board.NUM_SPACES:
+            return choice(range(self.board.NUM_SPACES))
+        import ipdb; ipdb.set_trace();
+        return self._minimax(self.MINIMAX_DEPTH, player)[1]
 
 
 class Player(object):
@@ -89,12 +136,14 @@ class Player(object):
         else:
             # computer will only choose a valid space,
             # no need to validate, just mark it
-            space_num = self.ai_strat.make_pick()
+            space_num = self.ai_strat.make_pick(self)
 
         self.board.mark_space(space_num, self)
 
     def __str__(self):
         return '<Player: {} {}>'.format(self.name, self.symbol)
+
+    __repr__ = __str__
 
 
 class Board(object):
@@ -118,17 +167,19 @@ class Board(object):
         # if someone has won return empty list
         if self.get_win():
             return []
-        return [space for space in spaces if not isinstance(space, Player)]
+        return [space for space in self.spaces if not isinstance(space, Player)]
 
-    def get_win(self):
+    def get_win(self, player=None):
         """
         Checks if the board has any wins on it.
+        If player is a Player instance it will only look to see if that player won.
         @return tuple (winning_positions_tuple, winning_player)
         """
+        player = player or Player
         # go through each winning positions and check to see if
         # any of the positions have the same player instance
         for position in self.WINNING_POSITIONS:
-            if (isinstance(self.spaces[position[0]], Player) and
+            if (isinstance(self.spaces[position[0]], player) and
                 self.spaces[position[0]] == self.spaces[position[1]] == self.spaces[position[2]]):
 
                 return (position, self.spaces[position[1]])
@@ -191,7 +242,7 @@ def main():
         # each player plays until the game has a winner
         for player in players:
             # always keep track of the active and waiting players
-            board.ACTIVE_PLAYER = player
+            board.CURRENT_PLAYER = player
             board.WAITING_PLAYER = players[1] if players.index(player) == 0 else players[0]
             print("{}'s Turn ({}):".format(player.name, player.symbol))
             player.make_play()

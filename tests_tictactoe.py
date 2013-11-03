@@ -31,7 +31,8 @@ class TestTicTacToe(unittest.TestCase):
         for space in winning_move:
             board.spaces[space] = player
         self.assertTrue(board.get_win())
-        
+       
+    @unittest.skip('') 
     def test_minimax(self):
         """
         Tests that minimax does something, without errors.
