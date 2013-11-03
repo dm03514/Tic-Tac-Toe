@@ -1,7 +1,7 @@
 from random import choice
 import unittest
 
-from tictactoe import Board, Player
+from tictactoe import Board, Player, Minimax
 
 
 class TestTicTacToe(unittest.TestCase):
@@ -32,4 +32,11 @@ class TestTicTacToe(unittest.TestCase):
             board.spaces[space] = player
         self.assertTrue(board.get_win())
         
-
+    def test_minimax(self):
+        """
+        Tests that minimax does something, without errors.
+        """
+        player = Player(board, 'C', 'Computer', is_human=False)
+        board = Board()
+        minimax = Minimax(board)
+        minimax.make_pick(player)

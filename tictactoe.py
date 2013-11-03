@@ -1,17 +1,57 @@
 from random import shuffle
 
 class Minimax(object):
+    LEVEL = 2
 
     def __init__(self, board):
         self.board = board
 
+    def _minimax(self, depth, player):
+        """
+        Implements minimax according to:
+        http://www.ntu.edu.sg/home/ehchua/programming/java/JavaGame_TicTacToe_AI.html#show-toc
+        """
+        best_score = float('-inf') if player == board.CURRENT_PLAYER else float('inf')
+        best_position = -1
+        moves = self.board.get_legal_moves()
+
+        if not moves or depth == 0:
+            best_score = self._evaluate()
+
+        for move in moves:
+            # try move for the current player
+            self.board.spaces[move] = player
+            if player == self.board.CURRENT_PLAYER: 
+                # this is the MAX
+                current_score = self._minimax(depth - 1, self.board.WAITING_PLAYER)[0]
+                if current_score > best_score:
+                    best_score = current_score
+                    best_position = move
+
+            else:
+                # MIN
+                current_score = self._minimax(depth - 1, self.board.CURRENT_PLAYER)[0]
+                if current_score < best_score:
+                    best_score = current_score
+                    best_position = move
+
+            # make sure to undo the move
+            self.board.spaces[move] = move
+
+        return (best_score, best_position)
+
+    def _evaluate(self):
+        pass
+
     def make_pick(self):
         """
+        Calls _minimax function
         """
         # return a first empty board space for right now
         for space in self.board.spaces:
             if not isinstance(space, Player):
                 return space
+        
 
 
 class Player(object):
@@ -53,6 +93,9 @@ class Player(object):
 
         self.board.mark_space(space_num, self)
 
+    def __str__(self):
+        return '<Player: {} {}>'.format(self.name, self.symbol)
+
 
 class Board(object):
     NUM_SPACES = 9
@@ -61,6 +104,8 @@ class Board(object):
         (0, 3, 6), (1, 4, 7), (2, 5, 8), # cols
         (0, 4, 8), (2, 4, 6) # diagonals
     )
+    CURRENT_PLAYER = None
+    WAITING_PLAYER = None
     
     def __init__(self):
         self.spaces = list(range(self.NUM_SPACES))
@@ -68,9 +113,12 @@ class Board(object):
     def get_legal_moves(self):
         """
         Generates a collection of all legal moves on this board.
-        @return tuple of moves
+        @return list of ints that represent legal move indexes
         """
-        pass
+        # if someone has won return empty list
+        if self.get_win():
+            return []
+        return [space for space in spaces if not isinstance(space, Player)]
 
     def get_win(self):
         """
@@ -134,25 +182,24 @@ def main():
         Player(board, 'H', 'human'),
         Player(board, 'C', 'computer', is_human=False, ai_strat=Minimax(board))
     ]
-
     # randomly determine who goes first
     shuffle(players)
-
     print(board)
 
     # game loop
     while True:
-
         # each player plays until the game has a winner
         for player in players:
-            print("{}'s Turn:".format(player.name))
+            # always keep track of the active and waiting players
+            board.ACTIVE_PLAYER = player
+            board.WAITING_PLAYER = players[1] if players.index(player) == 0 else players[0]
+            print("{}'s Turn ({}):".format(player.name, player.symbol))
             player.make_play()
             print(board)
             win = board.get_win()
             if win:
                 print('{} Won! Game Over'.format(win[1].name))
                 return
-
 
 if __name__ == '__main__':
     main()
