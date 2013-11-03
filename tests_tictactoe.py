@@ -53,6 +53,21 @@ class TestTicTacToe(unittest.TestCase):
         board.CURRENT_PLAYER = computer
         board.WAITING_PLAYER = human 
 
-        #import ipdb; ipdb.set_trace();
         self.assertEqual(2, computer.make_play())
 
+    def test_minimax_failing_block(self):
+        """
+        |H|1|H|
+        |3|C|5|
+        |6|7|8|
+        """
+        board = Board()
+        computer = Player(board, 'C', 'computer', is_human=False, ai_strat=Minimax(board))
+        computer.ai_strat.MINIMAX_DEPTH = 1
+        human = Player(board, 'H', 'human')
+        board.spaces[0] = human
+        board.spaces[2] = human
+        board.spaces[4] = computer
+        board.CURRENT_PLAYER = computer
+        board.WAITING_PLAYER = human 
+        self.assertEqual(1, computer.make_play())

@@ -11,7 +11,6 @@ class Minimax(object):
         Implements minimax according to:
         http://www.ntu.edu.sg/home/ehchua/programming/java/JavaGame_TicTacToe_AI.html#show-toc
         """
-        #import ipdb; ipdb.set_trace();
         best_score = float('-inf') if player == self.board.CURRENT_PLAYER else float('inf')
         best_position = -1
         moves = self.board.get_legal_moves()
@@ -43,18 +42,15 @@ class Minimax(object):
         return (best_score, best_position)
 
     def _evaluate(self):
-        """
-        The heuristic evaluation function for the current board
-        @Return +100, +10, +1 for EACH 3-, 2-, 1-in-a-line for computer.
-               -100, -10, -1 for EACH 3-, 2-, 1-in-a-line for opponent.
-               0 otherwise
-        """
-        score = 0
         return sum(self._evaluate_line(position) 
                     for position in self.board.WINNING_POSITIONS)
 
     def _evaluate_line(self, position):
         """
+        The heuristic evaluation function for the current board
+        @Return +100, +10, +1 for EACH 3-, 2-, 1-in-a-line for computer.
+               -100, -10, -1 for EACH 3-, 2-, 1-in-a-line for opponent.
+               0 otherwise
         Calculates the score for a given position.
         @param position tuple (int, int, int) representing a winning line
         @return int
@@ -64,7 +60,7 @@ class Minimax(object):
         # first space
         if self.board.spaces[first_pos] == self.board.CURRENT_PLAYER:
             score = 1
-        else:
+        elif self.board.spaces[first_pos] == self.board.WAITING_PLAYER:
             score = -1
         # second space 
         if self.board.spaces[second_pos] == self.board.CURRENT_PLAYER:
@@ -74,7 +70,7 @@ class Minimax(object):
                 return 0
             else:
                 score = 1
-        else:
+        elif self.board.spaces[second_pos] == self.board.WAITING_PLAYER:
             if score == -1:
                 score = -10 
             elif score == 1:
@@ -89,7 +85,7 @@ class Minimax(object):
                 return 0
             else:
                 score = 1
-        else:
+        elif self.board.spaces[third_pos] == self.board.WAITING_PLAYER:
             if score < 0:
                 score *= 10
             elif score > 1:
@@ -151,8 +147,6 @@ class Player(object):
     def __str__(self):
         return '<Player: {} {}>'.format(self.name, self.symbol)
 
-    __repr__ = __str__
-
 
 class Board(object):
     NUM_SPACES = 9
@@ -208,7 +202,7 @@ class Board(object):
         Checks if a given space is open or not
         @return boolean
         """
-        return not isinstance(self.spaces, Player)
+        return not isinstance(self.spaces[space_num], Player)
 
     def mark_space(self, space_num, player):
         """
@@ -255,8 +249,15 @@ def main():
             print("{}'s Turn ({}):".format(player.name, player.symbol))
             player.make_play()
             print(board)
+
+            # check to see if this game is over, 
+            # if its not goes to next player's pick
             win = board.get_win()
-            if win:
+            # A tie is when no one has won and all the legal moves are used up.
+            if not win and not board.get_legal_moves():
+                print('Tie!!!')
+                return     
+            elif win:
                 print('{} Won! Game Over'.format(win[1].name))
                 return
 
