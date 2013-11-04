@@ -1,10 +1,59 @@
 from random import shuffle, choice
 
-class Minimax(object):
-    MINIMAX_DEPTH = 2
 
-    def __init__(self, board):
+class Player(object):
+
+    def __init__(self, board, symbol):
         self.board = board
+        self.symbol = symbol 
+
+    def make_play(self):
+        """
+        Puts a play on the board. And returns the space_num played.
+        @return int
+        """
+        raise NotImplementedError()
+
+    @property
+    def name(self):
+        """
+        The name of the player, as seen in the console.
+        """
+        raise NotImplementedError()
+
+    def __str__(self):
+        return '<Player: {} {}>'.format(self.name, self.symbol)
+
+
+class HumanPlayer(Player):
+    name = 'human'
+
+    def _get_player_input(self):
+        """
+        Gets a players input.
+        """
+        while True:
+            try:
+                space_num = int(raw_input('Space Number?'))
+            except ValueError:
+                print('Invalid Space Number, Please choose again')
+            else:
+                if self.board.is_valid_space(space_num):
+                    return space_num
+                print('Invalid Space Number, Please choose again')
+
+    def make_play(self):
+        """
+        Prompt user for play space. Then puts the play on the board.
+        """
+        space_num = self._get_player_input()
+        self.board.mark_space(space_num, self)
+        return space_num
+
+
+class AIMinimaxPlayer(Player):
+    MINIMAX_DEPTH = 2
+    name = 'computer'
 
     def _minimax(self, depth, player):
         """
@@ -94,59 +143,18 @@ class Minimax(object):
                 score = -1
         return score
 
-    def make_pick(self, player):
+    def make_play(self):
         """
         Calls _minimax function
         """
         # if no picks have been made, choose a random space
         if len(self.board.get_legal_moves()) == self.board.NUM_SPACES:
-            return choice(range(self.board.NUM_SPACES))
-        return self._minimax(self.MINIMAX_DEPTH, player)[1]
-
-
-class Player(object):
-
-    def __init__(self, board, symbol, name, is_human=True, ai_strat=None):
-        self.board = board
-        self.symbol = symbol 
-        self.name = name
-        self.is_human = is_human
-        self.ai_strat = ai_strat 
-
-    def _get_player_input(self):
-        """
-        Gets a players input.
-        """
-        while True:
-            try:
-                space_num = int(raw_input('Space Number?'))
-            except ValueError:
-                print('Invalid Space Number, Please choose again')
-            else:
-                if self.board.is_valid_space(space_num):
-                    return space_num
-                print('Invalid Space Number, Please choose again')
-
-    def make_play(self):
-        """
-        Puts a play on the board.  If player is human player prompt for a 
-        play space, else if it is computer player, use an ai_strat to 
-        determine the play.
-        """
-        if self.is_human:
-            # prompt for user input
-            space_num = self._get_player_input()
+            space_num = choice(range(self.board.NUM_SPACES))
         else:
-            # computer will only choose a valid space,
-            # no need to validate, just mark it
-            space_num = self.ai_strat.make_pick(self)
-
+            space_num = self._minimax(self.MINIMAX_DEPTH, self)[1]
         self.board.mark_space(space_num, self)
         return space_num
-
-    def __str__(self):
-        return '<Player: {} {}>'.format(self.name, self.symbol)
-
+    
 
 class Board(object):
     NUM_SPACES = 9
@@ -232,8 +240,8 @@ class Board(object):
 def main():
     board = Board()
     players = [
-        Player(board, 'H', 'human'),
-        Player(board, 'C', 'computer', is_human=False, ai_strat=Minimax(board))
+        HumanPlayer(board, symbol='H'),
+        AIMinimaxPlayer(board, symbol='C')
     ]
     # randomly determine who goes first
     shuffle(players)

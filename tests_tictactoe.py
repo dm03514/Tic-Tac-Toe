@@ -1,7 +1,7 @@
 from random import choice
 import unittest
 
-from tictactoe import Board, Player, Minimax
+from tictactoe import Board, HumanPlayer, AIMinimaxPlayer
 
 
 class TestTicTacToe(unittest.TestCase):
@@ -26,7 +26,7 @@ class TestTicTacToe(unittest.TestCase):
         self.assertFalse(board.get_win())
 
         # create a player and mark a winning move
-        player = Player(board, 'H', 'human')
+        player = HumanPlayer(board, 'H')
         winning_move = choice(board.WINNING_POSITIONS)
         for space in winning_move:
             board.spaces[space] = player
@@ -37,8 +37,8 @@ class TestTicTacToe(unittest.TestCase):
         Tests that computer can block human. 
         """
         board = Board()
-        computer = Player(board, 'C', 'computer', is_human=False, ai_strat=Minimax(board))
-        human = Player(board, 'H', 'human')
+        computer = AIMinimaxPlayer(board, 'C')
+        human = HumanPlayer(board, 'H')
         # set up human about to win
         board.spaces[0] = human
         board.spaces[1] = human
@@ -62,9 +62,9 @@ class TestTicTacToe(unittest.TestCase):
         |6|7|8|
         """
         board = Board()
-        computer = Player(board, 'C', 'computer', is_human=False, ai_strat=Minimax(board))
-        computer.ai_strat.MINIMAX_DEPTH = 1
-        human = Player(board, 'H', 'human')
+        computer = AIMinimaxPlayer(board, 'C')
+        computer.MINIMAX_DEPTH = 1
+        human = HumanPlayer(board, 'H')
         board.spaces[0] = human
         board.spaces[2] = human
         board.spaces[4] = computer
